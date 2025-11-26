@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Developer Finance Engine{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <!-- Lenders Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Lenders</dt>
+                            <dd class="text-lg font-semibold text-gray-900" id="lender-count">--</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Active Products</dt>
+                            <dd class="text-lg font-semibold text-gray-900" id="product-count">--</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Changes Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Changes (7 days)</dt>
+                            <dd class="text-lg font-semibold text-gray-900" id="change-count">--</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Changes Card -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Critical Changes</dt>
+                            <dd class="text-lg font-semibold text-gray-900" id="critical-count">--</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-2 mb-8">
+        <!-- Products by Type Chart -->
+        <div class="bg-white overflow-hidden shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Products by Finance Type</h3>
+            <canvas id="productsChart" height="200"></canvas>
+        </div>
+
+        <!-- Lenders by Type Chart -->
+        <div class="bg-white overflow-hidden shadow rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Lenders by Type</h3>
+            <canvas id="lendersChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    <div class="bg-white overflow-hidden shadow rounded-lg mb-8">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">System Alerts</h3>
+            <div id="alerts-container">
+                <p class="text-gray-500">Loading alerts...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+            <div class="flex flex-wrap gap-4">
+                <button onclick="runScrape()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Run Scrape Now
+                </button>
+                <a href="/search" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Search Products
+                </a>
+                <a href="/api/v1/docs" target="_blank" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    API Documentation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load dashboard data
+    async function loadDashboard() {
+        try {
+            const response = await fetch('/api/v1/dashboard/overview');
+            const data = await response.json();
+
+            document.getElementById('lender-count').textContent = data.lenders.active;
+            document.getElementById('product-count').textContent = data.products.total;
+            document.getElementById('change-count').textContent = data.scraping.changes_last_7_days;
+            document.getElementById('critical-count').textContent = data.scraping.critical_changes;
+
+            // Products chart
+            const productsCtx = document.getElementById('productsChart').getContext('2d');
+            new Chart(productsCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(data.products.by_type).map(k => k.replace('_', ' ')),
+                    datasets: [{
+                        data: Object.values(data.products.by_type),
+                        backgroundColor: [
+                            '#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                            '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
+                        ],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        }
+                    }
+                }
+            });
+
+            // Lenders chart
+            const lendersCtx = document.getElementById('lendersChart').getContext('2d');
+            new Chart(lendersCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data.lenders.by_type).map(k => k.replace('_', ' ')),
+                    datasets: [{
+                        label: 'Lenders',
+                        data: Object.values(data.lenders.by_type),
+                        backgroundColor: '#4F46E5',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+        }
+    }
+
+    // Load alerts
+    async function loadAlerts() {
+        try {
+            const response = await fetch('/api/v1/dashboard/alerts');
+            const data = await response.json();
+
+            const container = document.getElementById('alerts-container');
+
+            if (data.alerts.length === 0) {
+                container.innerHTML = '<p class="text-green-600">No alerts - system healthy!</p>';
+                return;
+            }
+
+            let html = '';
+            for (const alert of data.alerts) {
+                const colorClass = {
+                    'critical': 'bg-red-100 border-red-500 text-red-700',
+                    'error': 'bg-red-100 border-red-500 text-red-700',
+                    'warning': 'bg-yellow-100 border-yellow-500 text-yellow-700',
+                    'info': 'bg-blue-100 border-blue-500 text-blue-700',
+                }[alert.type] || 'bg-gray-100 border-gray-500 text-gray-700';
+
+                html += `
+                    <div class="border-l-4 p-4 mb-2 ${colorClass}">
+                        <div class="font-medium">${alert.title}</div>
+                        <div class="text-sm">${alert.message}</div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading alerts:', error);
+        }
+    }
+
+    // Run scrape
+    async function runScrape() {
+        if (!confirm('Run scrape for all lenders due for update?')) return;
+
+        try {
+            const response = await fetch('/api/v1/scraping/run', { method: 'POST' });
+            const data = await response.json();
+            alert(data.message);
+        } catch (error) {
+            alert('Error starting scrape: ' + error.message);
+        }
+    }
+
+    // Load on page load
+    loadDashboard();
+    loadAlerts();
+</script>
+{% endblock %}

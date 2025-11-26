@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Developer Finance Engine{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <span class="text-xl font-bold">DevFinance</span>
+                    </a>
+                    <div class="hidden md:block ml-10">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="/" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">Dashboard</a>
+                            <a href="/lenders" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">Lenders</a>
+                            <a href="/products" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">Products</a>
+                            <a href="/search" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">Search</a>
+                            <a href="/changes" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">Changes</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="/api/v1/docs" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-indigo-500">API Docs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-auto">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-gray-500 text-sm">
+                Developer Finance Engine &copy; 2024 | UK Property Development Finance Platform
+            </p>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

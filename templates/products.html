@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Products - Developer Finance Engine{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Products</h1>
+        <div class="flex gap-2">
+            <select id="financeTypeFilter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                <option value="">All Finance Types</option>
+                <option value="bridging">Bridging</option>
+                <option value="development">Development</option>
+                <option value="mezzanine">Mezzanine</option>
+                <option value="equity">Equity</option>
+                <option value="joint_venture">JV</option>
+                <option value="developer_exit">Developer Exit</option>
+                <option value="refurbishment">Refurbishment</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div id="summaryCards" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <!-- Populated by JS -->
+    </div>
+
+    <div class="bg-white shadow overflow-hidden rounded-lg">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Max LTV/LTC</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loan Range</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
+                </tr>
+            </thead>
+            <tbody id="productsTable" class="bg-white divide-y divide-gray-200">
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadSummary() {
+        try {
+            const response = await fetch('/api/v1/products/summary');
+            const data = await response.json();
+
+            const container = document.getElementById('summaryCards');
+            let html = '';
+
+            for (const [type, count] of Object.entries(data.by_finance_type)) {
+                html += `
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <p class="text-sm text-gray-500">${type.replace('_', ' ')}</p>
+                        <p class="text-2xl font-bold text-indigo-600">${count}</p>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading summary:', error);
+        }
+    }
+
+    async function loadProducts() {
+        const financeType = document.getElementById('financeTypeFilter').value;
+        let url = '/api/v1/products/?limit=100';
+        if (financeType) url += `&finance_type=${financeType}`;
+
+        try {
+            const response = await fetch(url);
+            const products = await response.json();
+
+            const tbody = document.getElementById('productsTable');
+
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">No products found</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (const product of products) {
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                            <div class="text-sm text-gray-500">Lender ID: ${product.lender_id}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                ${product.finance_type.replace('_', ' ')}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${product.rate_from ? product.rate_from + '%' : '-'}</div>
+                            <div class="text-sm text-gray-500">${product.rate_type || ''}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${product.max_ltv ? 'LTV: ' + product.max_ltv + '%' : ''}
+                            ${product.max_ltc ? '<br>LTC: ' + product.max_ltc + '%' : ''}
+                            ${product.max_ltgdv ? '<br>LTGDV: ' + product.max_ltgdv + '%' : ''}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${product.min_loan ? '£' + (product.min_loan/1000).toFixed(0) + 'k' : '-'} -
+                            ${product.max_loan ? '£' + (product.max_loan/1000000).toFixed(0) + 'm' : '-'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${product.arrangement_fee_percent ? 'Arr: ' + product.arrangement_fee_percent + '%' : '-'}
+                            ${product.exit_fee_percent ? '<br>Exit: ' + product.exit_fee_percent + '%' : ''}
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading products:', error);
+        }
+    }
+
+    document.getElementById('financeTypeFilter').addEventListener('change', loadProducts);
+    loadSummary();
+    loadProducts();
+</script>
+{% endblock %}

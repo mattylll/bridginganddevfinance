@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Changes - Developer Finance Engine{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Rate Changes & Updates</h1>
+        <div class="flex gap-2">
+            <select id="significanceFilter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                <option value="">All Changes</option>
+                <option value="critical">Critical Only</option>
+                <option value="high">High Priority</option>
+                <option value="normal">Normal</option>
+            </select>
+            <select id="daysFilter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border">
+                <option value="7">Last 7 days</option>
+                <option value="30" selected>Last 30 days</option>
+                <option value="90">Last 90 days</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Total Changes</p>
+            <p class="text-2xl font-bold text-indigo-600" id="totalChanges">--</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Rate Increases</p>
+            <p class="text-2xl font-bold text-red-600" id="rateIncreases">--</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Rate Decreases</p>
+            <p class="text-2xl font-bold text-green-600" id="rateDecreases">--</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <p class="text-sm text-gray-500">Critical</p>
+            <p class="text-2xl font-bold text-orange-600" id="criticalCount">--</p>
+        </div>
+    </div>
+
+    <!-- Changes List -->
+    <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Recent Changes</h3>
+            <div id="changesContainer" class="space-y-4">
+                <p class="text-gray-500">Loading changes...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadChanges() {
+        const significance = document.getElementById('significanceFilter').value;
+        const days = document.getElementById('daysFilter').value;
+
+        let url = `/api/v1/scraping/changes?days=${days}`;
+        if (significance) url += `&significance=${significance}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            // Update summary stats
+            document.getElementById('totalChanges').textContent = data.summary.total_changes;
+            document.getElementById('rateIncreases').textContent = data.summary.by_type.rate_increase || 0;
+            document.getElementById('rateDecreases').textContent = data.summary.by_type.rate_decrease || 0;
+            document.getElementById('criticalCount').textContent = data.summary.by_significance.critical || 0;
+
+            // Render changes
+            const container = document.getElementById('changesContainer');
+
+            if (data.recent_changes.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No changes found for the selected period.</p>';
+                return;
+            }
+
+            let html = '';
+            for (const change of data.recent_changes) {
+                const colorMap = {
+                    'critical': 'red',
+                    'high': 'orange',
+                    'normal': 'yellow',
+                    'low': 'gray'
+                };
+                const color = colorMap[change.significance] || 'gray';
+
+                const typeIcon = {
+                    'rate_increase': '📈',
+                    'rate_decrease': '📉',
+                    'ltv_change': '🏠',
+                    'fee_change': '💰',
+                    'new_product': '✨',
+                    'product_removed': '❌',
+                    'criteria_change': '📋',
+                }[change.type] || '📝';
+
+                html += `
+                    <div class="border-l-4 border-${color}-400 bg-${color}-50 p-4 rounded-r-lg">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-center">
+                                <span class="text-xl mr-3">${typeIcon}</span>
+                                <div>
+                                    <p class="font-medium text-gray-900">${change.description}</p>
+                                    <p class="text-sm text-gray-500">
+                                        ${change.entity_type} | ${change.field || 'N/A'} |
+                                        ${new Date(change.created_at).toLocaleString()}
+                                    </p>
+                                </div>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${color}-100 text-${color}-800">
+                                ${change.significance}
+                            </span>
+                        </div>
+                        ${change.old_value || change.new_value ? `
+                            <div class="mt-2 text-sm">
+                                ${change.old_value ? `<span class="text-red-600 line-through">${change.old_value}</span>` : ''}
+                                ${change.old_value && change.new_value ? ' → ' : ''}
+                                ${change.new_value ? `<span class="text-green-600">${change.new_value}</span>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading changes:', error);
+            document.getElementById('changesContainer').innerHTML = '<p class="text-red-500">Error loading changes</p>';
+        }
+    }
+
+    document.getElementById('significanceFilter').addEventListener('change', loadChanges);
+    document.getElementById('daysFilter').addEventListener('change', loadChanges);
+    loadChanges();
+</script>
+{% endblock %}
