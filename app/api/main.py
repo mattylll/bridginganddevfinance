@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.database import init_db
-from app.api.routes import lenders, products, search, scraping, dashboard, web
+from app.api.routes import lenders, products, search, scraping, dashboard, web, term_sheets, integrations
 
 
 settings = get_settings()
@@ -66,6 +66,8 @@ app.include_router(products.router, prefix="/api/v1/products", tags=["Products"]
 app.include_router(search.router, prefix="/api/v1/search", tags=["Search"])
 app.include_router(scraping.router, prefix="/api/v1/scraping", tags=["Scraping"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["Dashboard"])
+app.include_router(term_sheets.router, prefix="/api/v1/term-sheets", tags=["Term Sheets"])
+app.include_router(integrations.router, prefix="/api/v1/integrations", tags=["Integrations"])
 
 # Web dashboard routes
 app.include_router(web.router, tags=["Web"])

@@ -10,6 +10,16 @@ from app.models.product import (
 )
 from app.models.scrape_history import ScrapeHistory, ScrapeChange
 from app.models.rating import LenderRating, RatingCategory
+from app.models.integration import (
+    LenderIntegration,
+    IntegrationType,
+    DataFreshness,
+    TermSheet,
+    RateCard,
+    RateTier,
+    FeeStructure,
+    LendingCriteria,
+)
 
 __all__ = [
     "Lender",
@@ -23,4 +33,12 @@ __all__ = [
     "ScrapeChange",
     "LenderRating",
     "RatingCategory",
+    "LenderIntegration",
+    "IntegrationType",
+    "DataFreshness",
+    "TermSheet",
+    "RateCard",
+    "RateTier",
+    "FeeStructure",
+    "LendingCriteria",
 ]
