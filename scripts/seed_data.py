@@ -5,6 +5,7 @@ This script populates the database with real UK lenders and their products.
 Run with: python -m scripts.seed_data
 """
 
+import json
 import sys
 from pathlib import Path
 
@@ -906,7 +907,7 @@ def seed_lenders(db: Session) -> None:
             headquarters_location=lender_data.get("headquarters_location"),
             min_loan_amount=lender_data.get("min_loan_amount"),
             max_loan_amount=lender_data.get("max_loan_amount"),
-            geographic_coverage=lender_data.get("geographic_coverage"),
+            geographic_coverage=json.dumps(lender_data.get("geographic_coverage")) if lender_data.get("geographic_coverage") else None,
         )
 
         db.add(lender)
